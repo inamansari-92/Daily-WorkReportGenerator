@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.T Commodities - Daily Work Report Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="1" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .date-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .date-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .date-input label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .date-input input {
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .date-input input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h2::before {
+            content: '●';
+            color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .add-btn, .generate-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .add-btn:hover, .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            font-size: 16px;
+            padding: 15px 30px;
+            margin: 30px auto;
+            display: block;
+        }
+
+        .dynamic-list {
+            margin-top: 15px;
+        }
+
+        .list-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .list-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            align-items: center;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .staff-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .report-output {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .report-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .report-subtitle {
+            color: #6c757d;
+            font-size: 1.1em;
+        }
+
+        .report-date {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .report-section {
+            margin-bottom: 25px;
+        }
+
+        .report-section h3 {
+            color: #2c3e50;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .report-table th, .report-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .report-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .report-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .print-btn {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .attendance-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .list-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            .content, .date-section {
+                display: none;
+            }
+            
+            .report-output {
+                display: block !important;
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+                padding: 20px;
+            }
+            
+            .print-btn, .generate-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>A.T COMMODITIES</h1>
+            <p>Coal & Minerals Trading | Daily Accounts Work Report</p>
+        </div>
+
+        <div class="date-section">
+            <div class="date-input">
+                <label for="reportDate">Report Date:</label>
+                <input type="date" id="reportDate">
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Daily Payments Summary -->
+            <div class="section">
+                <h2>Daily Payments Summary</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bankName">Bank Name</label>
+                        <input type="text" id="bankName" placeholder="e.g., HBL, UBL, ABL">
+                    </div>
+                    <div class="form-group">
+                        <label for="chequeNumber">Cheque Number</label>
+                        <input type="text" id="chequeNumber" placeholder="e.g., 1234567">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient">Deposit Recipient</label>
+                        <input type="text" id="recipient" placeholder="Recipient Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="chequeQuantity">Quantity of Cheques</label>
+                        <input type="number" id="chequeQuantity" placeholder="e.g., 5" min="1">
+                    </div>
+                </div>
+                <button class="add-btn" onclick="addPayment()">Add Payment</button>
+                <div id="paymentsList" class="dynamic-list"></div>
+            </div>
+
+            <!-- Invoice Log -->
+            <div class="section">
+                <h2>Invoice Log</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="invoiceNumber">Invoice Number</label>
+                        <input type="text" id="invoiceNumber" placeholder="e.g., INV-2024-001">
+                    </div>
+                </div>
+                <button class="add-btn" onclick="addInvoice()">Add Invoice</button>
+                <div id="invoicesList" class="dynamic-list"></div>
+            </div>
+
+            <!-- Staff Attendance -->
+            <div class="section">
+                <h2>Staff Attendance Tracker</h2>
+                <div id="attendanceList">
+                    <div class="attendance-grid">
+                        <div class="staff-name">Inam ur Rehman Ansari</div>
+                        <select id="attendance_0">
+                            <option value="">Select Status</option>
+                            <option value="Office">Office</option>
+                            <option value="Warehouse">Warehouse</option>
+                            <option value="Field">Field</option>
+                            <option value="Medical Leave">Medical Leave</option>
+                            <option value="Absent">Absent</option>
+                        </select>
+                    </div>
+                    <div class="attendance-grid">
+                        <div class="staff-name">Ebad ur Rehman</div>
+                        <select id="attendance_1">
+                            <option value="">Select Status</option>
+                            <option value="Office">Office</option>
+                            <option value="Warehouse">Warehouse</option>
+                            <option value="Field">Field</option>
+                            <option value="Medical Leave">Medical Leave</option>
+                            <option value="Absent">Absent</option>
+                        </select>
+                    </div>
+                    <div class="attendance-grid">
+                        <div class="staff-name">Talha Siddiqui</div>
+                        <select id="attendance_2">
+                            <option value="">Select Status</option>
+                            <option value="Office">Office</option>
+                            <option value="Warehouse">Warehouse</option>
+                            <option value="Field">Field</option>
+                            <option value="Medical Leave">Medical Leave</option>
+                            <option value="Absent">Absent</option>
+                        </select>
+                    </div>
+                    <div class="attendance-grid">
+                        <div class="staff-name">Asad Anwar Khan</div>
+                        <select id="attendance_3">
+                            <option value="">Select Status</option>
+                            <option value="Office">Office</option>
+                            <option value="Warehouse">Warehouse</option>
+                            <option value="Field">Field</option>
+                            <option value="Medical Leave">Medical Leave</option>
+                            <option value="Absent">Absent</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button class="generate-btn" onclick="generateReport()">Generate Daily Report</button>
+        </div>
+
+        <!-- Report Output -->
+        <div id="reportOutput" class="report-output">
+            <div class="report-header">
+                <div class="report-title">A.T COMMODITIES</div>
+                <div class="report-subtitle">Coal & Minerals Trading</div>
+                <div class="report-date" id="reportDisplayDate"></div>
+            </div>
+
+            <div class="report-section">
+                <h3>Daily Payments Summary</h3>
+                <table class="report-table" id="paymentsTable">
+                    <thead>
+                        <tr>
+                            <th>Bank Name</th>
+                            <th>Cheque Number</th>
+                            <th>Deposit Recipient</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="report-section">
+                <h3>Invoice Log</h3>
+                <table class="report-table" id="invoicesTable">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Invoice Number</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="report-section">
+                <h3>Staff Attendance</h3>
+                <table class="report-table" id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>Staff Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="print-btn" onclick="window.print()">Print Report</button>
+                <button class="print-btn" onclick="editReport()" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">Edit Report</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set today's date as default
+        document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
+
+        let payments = [];
+        let invoices = [];
+        const staffNames = ['Inam ur Rehman Ansari', 'Ebad ur Rehman', 'Talha Siddiqui', 'Asad Anwar Khan'];
+
+        function addPayment() {
+            const bankName = document.getElementById('bankName').value.trim();
+            const chequeNumber = document.getElementById('chequeNumber').value.trim();
+            const recipient = document.getElementById('recipient').value.trim();
+            const quantity = document.getElementById('chequeQuantity').value.trim();
+
+            if (bankName && chequeNumber && recipient && quantity) {
+                const payment = { bankName, chequeNumber, recipient, quantity };
+                payments.push(payment);
+                updatePaymentsList();
+                clearPaymentForm();
+            } else {
+                alert('Please fill all payment fields');
+            }
+        }
+
+        function updatePaymentsList() {
+            const paymentsList = document.getElementById('paymentsList');
+            paymentsList.innerHTML = '';
+
+            payments.forEach((payment, index) => {
+                const listItem = document.createElement('div');
+                listItem.className = 'list-item';
+                listItem.innerHTML = `
+                    <div>
+                        <strong>${payment.bankName}</strong> - Cheque: ${payment.chequeNumber}<br>
+                        Recipient: ${payment.recipient} | Quantity: ${payment.quantity}
+                    </div>
+                    <button class="remove-btn" onclick="removePayment(${index})">Remove</button>
+                `;
+                paymentsList.appendChild(listItem);
+            });
+        }
+
+        function removePayment(index) {
+            payments.splice(index, 1);
+            updatePaymentsList();
+        }
+
+        function clearPaymentForm() {
+            document.getElementById('bankName').value = '';
+            document.getElementById('chequeNumber').value = '';
+            document.getElementById('recipient').value = '';
+            document.getElementById('chequeQuantity').value = '';
+        }
+
+        function addInvoice() {
+            const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+
+            if (invoiceNumber) {
+                invoices.push(invoiceNumber);
+                updateInvoicesList();
+                document.getElementById('invoiceNumber').value = '';
+            } else {
+                alert('Please enter an invoice number');
+            }
+        }
+
+        function updateInvoicesList() {
+            const invoicesList = document.getElementById('invoicesList');
+            invoicesList.innerHTML = '';
+
+            invoices.forEach((invoice, index) => {
+                const listItem = document.createElement('div');
+                listItem.className = 'list-item';
+                listItem.innerHTML = `
+                    <div><strong>Invoice:</strong> ${invoice}</div>
+                    <button class="remove-btn" onclick="removeInvoice(${index})">Remove</button>
+                `;
+                invoicesList.appendChild(listItem);
+            });
+        }
+
+        function removeInvoice(index) {
+            invoices.splice(index, 1);
+            updateInvoicesList();
+        }
+
+        function generateReport() {
+            const reportDate = document.getElementById('reportDate').value;
+            
+            if (!reportDate) {
+                alert('Please select a report date');
+                return;
+            }
+
+            // Format date for display
+            const dateObj = new Date(reportDate);
+            const formattedDate = dateObj.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            document.getElementById('reportDisplayDate').textContent = `Daily Report - ${formattedDate}`;
+
+            // Generate payments table
+            const paymentsTableBody = document.querySelector('#paymentsTable tbody');
+            paymentsTableBody.innerHTML = '';
+            
+            if (payments.length === 0) {
+                paymentsTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6c757d;">No payments recorded</td></tr>';
+            } else {
+                payments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${payment.bankName}</td>
+                        <td>${payment.chequeNumber}</td>
+                        <td>${payment.recipient}</td>
+                        <td>${payment.quantity}</td>
+                    `;
+                    paymentsTableBody.appendChild(row);
+                });
+            }
+
+            // Generate invoices table
+            const invoicesTableBody = document.querySelector('#invoicesTable tbody');
+            invoicesTableBody.innerHTML = '';
+            
+            if (invoices.length === 0) {
+                invoicesTableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #6c757d;">No invoices generated</td></tr>';
+            } else {
+                invoices.forEach((invoice, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${invoice}</td>
+                    `;
+                    invoicesTableBody.appendChild(row);
+                });
+            }
+
+            // Generate attendance table
+            const attendanceTableBody = document.querySelector('#attendanceTable tbody');
+            attendanceTableBody.innerHTML = '';
+            
+            staffNames.forEach((name, index) => {
+                const attendance = document.getElementById(`attendance_${index}`).value || 'Not Recorded';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${attendance}</td>
+                `;
+                attendanceTableBody.appendChild(row);
+            });
+
+            // Show report and hide form
+            document.querySelector('.content').style.display = 'none';
+            document.querySelector('.date-section').style.display = 'none';
+            document.getElementById('reportOutput').style.display = 'block';
+        }
+
+        function editReport() {
+            document.querySelector('.content').style.display = 'block';
+            document.querySelector('.date-section').style.display = 'block';
+            document.getElementById('reportOutput').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
