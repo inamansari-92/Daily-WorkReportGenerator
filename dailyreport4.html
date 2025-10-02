@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.T Commodities - Daily Accounts Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .company-info h1 {
+            font-size: 2em;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .company-info p {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+
+        .report-info {
+            text-align: right;
+        }
+
+        .report-info h2 {
+            font-size: 1.3em;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        .report-info input[type="date"] {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .section h3 {
+            font-size: 1.3em;
+            color: #1e293b;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3b82f6;
+        }
+
+        .section.inventory h3 {
+            border-bottom-color: #10b981;
+        }
+
+        .section.invoice h3 {
+            border-bottom-color: #8b5cf6;
+        }
+
+        .section.attendance h3 {
+            border-bottom-color: #f59e0b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        thead {
+            background: #f1f5f9;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        tbody tr:hover {
+            background: #f1f5f9;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .total-row {
+            background: #e2e8f0 !important;
+            font-weight: bold;
+        }
+
+        .total-row td {
+            padding: 15px 12px;
+            border-bottom: none;
+        }
+
+        .total-amount {
+            color: #2563eb;
+            font-size: 1.1em;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+
+        .inventory-item span:first-child {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .inventory-item input {
+            width: 80px;
+            text-align: center;
+        }
+
+        .inventory-item span:last-child {
+            color: #64748b;
+            font-size: 0.85em;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .invoice-display {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f3ff;
+            border-radius: 6px;
+        }
+
+        .invoice-display p {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .invoice-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .invoice-tag {
+            padding: 6px 12px;
+            background: #ddd6fe;
+            color: #5b21b6;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .attendance-table th {
+            text-align: center;
+            font-size: 0.75em;
+            padding: 10px 5px;
+        }
+
+        .attendance-table td:first-child {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85em;
+            margin-top: 30px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .section, .header {
+                box-shadow: none;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+
+            input, select, textarea {
+                border: none;
+                background: transparent;
+            }
+
+            input[type="checkbox"] {
+                -webkit-appearance: checkbox;
+                appearance: checkbox;
+            }
+
+            tbody tr:hover {
+                background: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+            }
+
+            .report-info {
+                text-align: left;
+            }
+
+            table {
+                font-size: 0.8em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .attendance-table th {
+                font-size: 0.65em;
+                padding: 8px 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div class="company-info">
+                    <h1>A.T Commodities</h1>
+                    <p>Coal & Mineral Trading</p>
+                </div>
+                <div class="report-info">
+                    <h2>Daily Accounts Report</h2>
+                    <input type="date" id="reportDate">
+                </div>
+            </div>
+            <div class="button-group no-print">
+                <button class="btn btn-primary" onclick="window.print()">
+                    🖨️ Print Report
+                </button>
+                <button class="btn btn-success" onclick="window.print()">
+                    📥 Export PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Daily Payment Overview -->
+        <div class="section">
+            <h3>1. Daily Payment Overview</h3>
+            <table id="paymentTable">
+                <thead>
+                    <tr>
+                        <th>Bank Name</th>
+                        <th>Cheque No.</th>
+                        <th>Recipient</th>
+                        <th class="text-right">Amount (PKR)</th>
+                        <th class="no-print" style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="paymentBody">
+                    <tr>
+                        <td>
+                            <select class="bank-select">
+                                <option>Meezan Bank</option>
+                                <option>Bank Alhabib</option>
+                                <option>Bank Alfalah</option>
+                                <option>United Bank Limited</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Cheque #"></td>
+                        <td><input type="text" placeholder="Recipient name"></td>
+                        <td><input type="number" class="amount-input text-right" placeholder="0.00" step="0.01"></td>
+                        <td class="no-print text-center">
+                            <button class="btn btn-danger" onclick="removePayment(this)">🗑️</button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="3" class="text-right"><strong>Total Payments:</strong></td>
+                        <td class="text-right total-amount" id="totalAmount">PKR 0.00</td>
+                        <td class="no-print"></td>
+                    </tr>
+                </tfoot>
+            </table>
+            <button class="btn btn-primary no-print" onclick="addPayment()" style="margin-top: 15px;">
+                ➕ Add Payment
+            </button>
+        </div>
+
+        <!-- Cheque Inventory Status -->
+        <div class="section inventory">
+            <h3>2. Cheque Inventory Status</h3>
+            <div class="inventory-grid">
+                <div class="inventory-item">
+                    <span>Meezan Bank:</span>
+                    <input type="number" placeholder="0" min="0">
+                    <span>cheques</span>
+                </div>
+                <div class="inventory-item">
+                    <span>Bank Alhabib:</span>
+                    <input type="number" placeholder="0" min="0">
+                    <span>cheques</span>
+                </div>
+                <div class="inventory-item">
+                    <span>Bank Alfalah:</span>
+                    <input type="number" placeholder="0" min="0">
+                    <span>cheques</span>
+                </div>
+                <div class="inventory-item">
+                    <span>United Bank Limited:</span>
+                    <input type="number" placeholder="0" min="0">
+                    <span>cheques</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Activity Log -->
+        <div class="section invoice">
+            <h3>3. Invoice Activity Log</h3>
+            <textarea id="invoiceInput" placeholder="Enter invoice numbers separated by commas (e.g., INV-2024-001, INV-2024-002, INV-2024-003)"></textarea>
+            <div class="invoice-display" id="invoiceDisplay" style="display: none;">
+                <p>Invoices Issued Today:</p>
+                <div class="invoice-tags" id="invoiceTags"></div>
+            </div>
+        </div>
+
+        <!-- Staff Attendance Record -->
+        <div class="section attendance">
+            <h3>4. Staff Attendance Record</h3>
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Personnel</th>
+                        <th>Office</th>
+                        <th>Warehouse</th>
+                        <th>Field</th>
+                        <th>Medical Leave</th>
+                        <th>Leave</th>
+                        <th>Absent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Inam ur Rehman Ansari</td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                    </tr>
+                    <tr>
+                        <td>Ebad ur Rehman</td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                    </tr>
+                    <tr>
+                        <td>Talha Siddiqui</td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                    </tr>
+                    <tr>
+                        <td>Asad Anwar Khan</td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                        <td class="text-center"><input type="checkbox"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p id="generatedTime"></p>
+            <p>A.T Commodities - Daily Operations Report</p>
+        </div>
+    </div>
+
+    <script>
+        // Set today's date
+        document.getElementById('reportDate').valueAsDate = new Date();
+
+        // Update generated time
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        document.getElementById('generatedTime').textContent = 
+            'Generated on ' + now.toLocaleDateString('en-PK', options);
+
+        // Add payment row
+        function addPayment() {
+            const tbody = document.getElementById('paymentBody');
+            const newRow = tbody.rows[0].cloneNode(true);
+            
+            // Clear all inputs
+            newRow.querySelectorAll('input').forEach(input => input.value = '');
+            newRow.querySelector('select').selectedIndex = 0;
+            
+            tbody.appendChild(newRow);
+            updateTotal();
+        }
+
+        // Remove payment row
+        function removePayment(btn) {
+            const tbody = document.getElementById('paymentBody');
+            if (tbody.rows.length > 1) {
+                btn.closest('tr').remove();
+                updateTotal();
+            }
+        }
+
+        // Calculate total
+        function updateTotal() {
+            const amounts = document.querySelectorAll('.amount-input');
+            let total = 0;
+            amounts.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+            
+            document.getElementById('totalAmount').textContent = 
+                'PKR ' + total.toLocaleString('en-PK', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                });
+        }
+
+        // Listen for amount changes
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('amount-input')) {
+                updateTotal();
+            }
+        });
+
+        // Handle invoice input
+        document.getElementById('invoiceInput').addEventListener('input', function(e) {
+            const value = e.target.value.trim();
+            const display = document.getElementById('invoiceDisplay');
+            const tags = document.getElementById('invoiceTags');
+            
+            if (value) {
+                display.style.display = 'block';
+                tags.innerHTML = '';
+                
+                value.split(',').forEach(invoice => {
+                    const inv = invoice.trim();
+                    if (inv) {
+                        const tag = document.createElement('span');
+                        tag.className = 'invoice-tag';
+                        tag.textContent = inv;
+                        tags.appendChild(tag);
+                    }
+                });
+            } else {
+                display.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
